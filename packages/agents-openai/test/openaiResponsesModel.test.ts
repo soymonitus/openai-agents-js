@@ -13,7 +13,7 @@ describe('OpenAIResponsesModel', () => {
     setTracingDisabled(true);
   });
   it('getResponse returns correct ModelResponse and calls client with right parameters', async () => {
-    withTrace('test', async () => {
+    await withTrace('test', async () => {
       const fakeResponse = {
         id: 'res1',
         usage: {
@@ -74,8 +74,67 @@ describe('OpenAIResponsesModel', () => {
     });
   });
 
+  it('normalizes systemInstructions so empty strings are omitted', async () => {
+    await withTrace('test', async () => {
+      const fakeResponse = {
+        id: 'res-empty-instructions',
+        usage: {
+          input_tokens: 0,
+          output_tokens: 0,
+          total_tokens: 0,
+        },
+        output: [],
+      };
+      for (const systemInstructions of ['', '   ']) {
+        const request = {
+          systemInstructions,
+          input: 'hello',
+          modelSettings: {},
+          tools: [],
+          outputType: 'text',
+          handoffs: [],
+          tracing: false,
+          signal: undefined,
+        };
+        const createMock = vi.fn().mockResolvedValue(fakeResponse);
+        await new OpenAIResponsesModel(
+          { responses: { create: createMock } } as unknown as OpenAI,
+          'gpt-test',
+        ).getResponse(request as any);
+
+        expect(createMock).toHaveBeenCalledTimes(1);
+        const [args] = createMock.mock.calls[0];
+        expect('instructions' in args).toBe(true);
+        expect(args.instructions).toBeUndefined();
+      }
+
+      for (const systemInstructions of [' a ', 'foo']) {
+        const request = {
+          systemInstructions,
+          input: 'hello',
+          modelSettings: {},
+          tools: [],
+          outputType: 'text',
+          handoffs: [],
+          tracing: false,
+          signal: undefined,
+        };
+        const createMock = vi.fn().mockResolvedValue(fakeResponse);
+        await new OpenAIResponsesModel(
+          { responses: { create: createMock } } as unknown as OpenAI,
+          'gpt-test',
+        ).getResponse(request as any);
+
+        expect(createMock).toHaveBeenCalledTimes(1);
+        const [args] = createMock.mock.calls[0];
+        expect('instructions' in args).toBe(true);
+        expect(args.instructions).toBe(systemInstructions);
+      }
+    });
+  });
+
   it('merges top-level reasoning and text settings into provider data for Responses API', async () => {
-    withTrace('test', async () => {
+    await withTrace('test', async () => {
       const fakeResponse = {
         id: 'res-settings',
         usage: {
@@ -134,7 +193,7 @@ describe('OpenAIResponsesModel', () => {
   });
 
   it('getStreamedResponse yields events and calls client with stream flag', async () => {
-    withTrace('test', async () => {
+    await withTrace('test', async () => {
       const fakeResponse = { id: 'res2', usage: {}, output: [] };
       const events: ResponseStreamEvent[] = [
         { type: 'response.created', response: fakeResponse as any },
