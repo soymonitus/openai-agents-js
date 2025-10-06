@@ -162,7 +162,8 @@ const getWeatherTool = tool({
 
 const agent = new RealtimeAgent({
   name: 'Data agent',
-  instructions: 'You are a data agent. When you are asked to check weather, you must use the available tools.',
+  instructions:
+    'You are a data agent. When you are asked to check weather, you must use the available tools.',
   tools: [getWeatherTool],
 });
 
