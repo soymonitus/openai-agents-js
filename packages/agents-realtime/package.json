@@ -30,15 +30,15 @@
         "require": "./dist/shims/shims-browser.js",
         "import": "./dist/shims/shims-browser.mjs"
       },
-      "react-native": {
-        "require": "./dist/shims/shims-react-native.js",
-        "types": "./dist/shims/shims-react-native.d.ts",
-        "default": "./dist/shims/shims-react-native.mjs"
-      },
       "node": {
         "types": "./dist/shims/shims-node.d.ts",
         "require": "./dist/shims/shims-node.js",
         "import": "./dist/shims/shims-node.mjs"
+      },
+      "react-native": {
+        "types": "./dist/shims/shims-react-native.d.ts",
+        "require": "./dist/shims/shims-react-native.js",
+        "import": "./dist/shims/shims-react-native.mjs"
       },
       "types": "./dist/shims/shims.d.ts",
       "require": "./dist/shims/shims.js",
