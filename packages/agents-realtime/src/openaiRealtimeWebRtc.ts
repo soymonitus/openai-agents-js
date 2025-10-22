@@ -1,6 +1,10 @@
 /// <reference lib="dom" />
 
-import { isBrowserEnvironment } from '@openai/agents-core/_shims';
+import {
+  isBrowserEnvironment,
+  mediaDevices as shimMediaDevices,
+  RTCPeerConnection as RTCPeerConnectionCtor,
+} from '@openai/agents-realtime/_shims';
 import {
   RealtimeTransportLayer,
   RealtimeTransportLayerConnectOptions,
@@ -98,7 +102,7 @@ export class OpenAIRealtimeWebRTC
   #muted = false;
 
   constructor(private readonly options: OpenAIRealtimeWebRTCOptions = {}) {
-    if (typeof RTCPeerConnection === 'undefined') {
+    if (typeof RTCPeerConnectionCtor === 'undefined') {
       throw new Error('WebRTC is not supported in this environment');
     }
     super(options);
@@ -177,7 +181,7 @@ export class OpenAIRealtimeWebRTC
 
         const connectionUrl = new URL(baseUrl);
 
-        let peerConnection: RTCPeerConnection = new RTCPeerConnection();
+        let peerConnection: RTCPeerConnection = new RTCPeerConnectionCtor();
         const dataChannel = peerConnection.createDataChannel('oai-events');
         let callId: string | undefined = undefined;
 
@@ -233,19 +237,19 @@ export class OpenAIRealtimeWebRTC
         });
 
         // set up audio playback
-        const audioElement =
-          this.options.audioElement ?? document.createElement('audio');
-        audioElement.autoplay = true;
-        peerConnection.ontrack = (event) => {
-          audioElement.srcObject = event.streams[0];
-        };
+        if (isBrowserEnvironment()) {
+          const audioElement =
+            this.options.audioElement ?? document.createElement('audio');
+          audioElement.autoplay = true;
+          peerConnection.ontrack = (event) => {
+            audioElement.srcObject = event.streams[0];
+          };
+        }
 
         // get microphone stream
         const stream =
           this.options.mediaStream ??
-          (await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          }));
+          (await shimMediaDevices.getUserMedia({ audio: true }));
         peerConnection.addTrack(stream.getAudioTracks()[0]);
 
         if (this.options.changePeerConnection) {
