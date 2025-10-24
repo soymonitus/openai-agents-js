@@ -89,7 +89,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-# dist
+dist
 
 # Gatsby files
 .cache/
@@ -136,7 +136,7 @@ out
 .pnp.*
 
 # Commit the dist directory so it is available to the public
-# packages/*/dist
+packages/*/dist
 
 docs/src/content/docs/@openai/*
 docs/src/content/docs/openai/*
